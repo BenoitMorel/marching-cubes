@@ -47,7 +47,7 @@ bool Viewer::init()
 	int picWidth = 256;
 	int picHeight = 256;
 
-	GLuint Texture = GG::loadBMP_custom("..\\ressources\\textures\\uvtemplate.bmp");
+	GLuint Texture = GG::loadBMP_custom("..\\OpenglViewer\\ressources\\textures\\uvtemplate.bmp");
 
 	//VBO
 	glGenBuffers(1, &vboID);
@@ -59,7 +59,7 @@ bool Viewer::init()
 	glBufferData(GL_ARRAY_BUFFER, sizeof(g_uv_buffer_data) * sizeof(GLfloat), g_uv_buffer_data, GL_STATIC_DRAW);
 
 	// shaders
-	programID = GG::LoadShaders("..\\shaders\\SimpleVertexShader.vertexshader", "..\\shaders\\SimpleFragmentShader.fragmentshader");
+	programID = GG::LoadShaders("..\\OpenglViewer\\shaders\\SimpleVertexShader.vertexshader", "..\\OpenglViewer\\shaders\\SimpleFragmentShader.fragmentshader");
 
 	matrixID = glGetUniformLocation(programID, "MVP");
 	lastTime = glfwGetTime() - 1;

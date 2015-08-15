@@ -68,7 +68,7 @@ int main( void )
 	int picWidth = 256;
 	int picHeight = 256;
 
-	GLuint Texture = GG::loadBMP_custom("../tutorial05_textured_cube/uvtemplate.bmp");
+	GLuint Texture = GG::loadBMP_custom("..\\ressources\\textures\\uvtemplate.bmp");
 
 	//VBO
 	GLuint vboID;
@@ -82,7 +82,7 @@ int main( void )
 	glBufferData(GL_ARRAY_BUFFER, sizeof(g_uv_buffer_data) * sizeof(GLfloat), g_uv_buffer_data, GL_STATIC_DRAW);
 
 	// shaders
-	GLuint programID = GG::LoadShaders("SimpleVertexShader.vertexshader", "SimpleFragmentShader.fragmentshader");
+	GLuint programID = GG::LoadShaders("..\\shaders\\SimpleVertexShader.vertexshader", "..\\shaders\\SimpleFragmentShader.fragmentshader");
 
 	// matrices
 	Camera camera;

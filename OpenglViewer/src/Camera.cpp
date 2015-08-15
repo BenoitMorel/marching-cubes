@@ -19,7 +19,7 @@ void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
 {
 	Camera::wheelRotation = std::min(45.0, std::max(-45.0, Camera::wheelRotation + yoffset * 2));
 	
-	std::cout << yoffset << std::endl;
+	std::cout << Camera::wheelRotation << std::endl;
 }
 
 
@@ -80,7 +80,7 @@ void Camera::updateLeft(int width, int height, double mouseX, double mouseY) {
 	glm::vec3 v1 = getSphereVec(previousXLeft, previousYLeft, r);
 	glm::vec3 v2 = getSphereVec(mouseX, mouseY, r);
 	glm::vec3 N = glm::normalize(glm::cross(v1, v2));
-	double teta = acos(glm::dot(v1, v2)) * 180.0 / 3.1415926535;
+	double teta = acos(glm::dot(v1, v2)) /** 180.0 / 3.1415926535*/;
 	glm::mat4 rot = glm::rotate((float)teta, N);
 	rotation = rot * rotation;
 	previousXLeft = mouseX;
@@ -93,7 +93,7 @@ void Camera::update(GLFWwindow* window, float deltaTime) {
 	double mouseX, mouseY;
 	glfwGetWindowSize(window, &width, &height);
 	glfwGetCursorPos(window, &mouseX, &mouseY);
-	projectionMatrix = glm::perspective(initialFov - wheelRotation, (float)4 / (float)3, 0.1f, 100.0f);
+	projectionMatrix = glm::perspective((initialFov - wheelRotation) * 3.14f / 180.0f, (float)4 / (float)3, 0.1f, 100.0f);
 
 	mouseX -= width / 2;
 	mouseY -= height / 2;

@@ -51,3 +51,4 @@ OpenglViewer/OpenglViewer.sdf
 *.vcxproj*
 OpenglViewer/OpenglViewer/Debug/*
 
+*.sdf

@@ -41,3 +41,13 @@ $RECYCLE.BIN/
 Network Trash Folder
 Temporary Items
 .apdisk
+*.suo
+*.opensdf
+OpenglViewer/OpenglViewer.sdf
+*.sln
+*.exe
+*.pdb
+*.ilk
+*.vcxproj*
+OpenglViewer/OpenglViewer/Debug/*
+

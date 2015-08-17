@@ -52,3 +52,7 @@ OpenglViewer/OpenglViewer.sdf
 OpenglViewer/OpenglViewer/Debug/*
 
 *.sdf
+*.obj
+*.tlog
+MarchingCubesCPU/Debug/vc140.idb
+*.log

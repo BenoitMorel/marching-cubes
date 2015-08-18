@@ -9,7 +9,27 @@
 #define GETJ(macroindex) (((macroindex)/GRID_SIZE) % GRID_SIZE)
 #define GETI(macroindex) ((macroindex) / (GRID_SIZE * GRID_SIZE))
 
+/*
+*	isosurfaces from http ://www.z-way.org/script-and-gizmo/houdini/isosurface
+*/
 
+static int test = 0;
+
+float fresnel(float x, float y, float z) {
+	return cos(10 * (x*x + y*y + z*z));
+}
+
+float ballons(float x, float y, float z) {
+
+	x *= 2.0;
+	y *= 2.0;
+	z *= 2.0;
+	x -= 1;
+	y -= 1;
+	z -= 1;
+	const int plop = 1000 + test;
+	return -(x*x + y*y + z*z) + cos(x * plop) * cos(plop * y) * cos(plop * z) + 0.215;
+}
 
 float myCrazyFunction(float x, float y, float z)
 {
@@ -20,7 +40,7 @@ float myCrazyFunction(float x, float y, float z)
 	x -= 1;
 	y -= 1;
 	z -= 1;
-	return x * x * x + y * y + z * z - 0.9f;
+	return x * x * x + sqrt(fabs(y)) * x + z * z - 0.9f;
 }
 
 #define INTERPOL_VERTEX(EDGE_VALUE,	VERTEX, POSCELL, INDEX, P1, P2) \
@@ -103,25 +123,38 @@ void writeObj(char * fileName, float *data, int dataSize) {
 
 }
 
+void compute(std::vector<float> &out) {
+	std::vector<float> grid(GRID_SIZE * GRID_SIZE * GRID_SIZE);
+	for (int i = 0; i < GRID_SIZE * GRID_SIZE * GRID_SIZE; ++i) {
+		grid[i] = ballons(float(GETI(i)) / float(GRID_SIZE), float(GETJ(i)) / float(GRID_SIZE), float(GETK(i) / float(GRID_SIZE)));
+	}
+	for (int i = 0; i < GRID_SIZE - 1; ++i) {
+		for (int j = 0; j < GRID_SIZE - 1; ++j) {
+			for (int k = 0; k < GRID_SIZE - 1; ++k) {
+				getTrianglesFrom(i, j, k, &grid[0], out);
+			}
+		}
+	}
+	std::cout << out.size() << std::endl;
+}
+
 int main(void)
 {
 
 	
 	std::vector<float> outputPoints;
-	std::vector<float> grid(GRID_SIZE * GRID_SIZE * GRID_SIZE);
-	for (int i = 0; i < GRID_SIZE * GRID_SIZE * GRID_SIZE; ++i) {
-		grid[i] = myCrazyFunction(float(GETI(i))/float(GRID_SIZE), float(GETJ(i))/float(GRID_SIZE), float(GETK(i) / float(GRID_SIZE)));
-	}	
-	for (int i = 0; i < GRID_SIZE - 1; ++i) {
-		for (int j = 0; j < GRID_SIZE - 1; ++j) {
-			for (int k = 0; k < GRID_SIZE - 1; ++k) {
-				getTrianglesFrom(i, j, k, &grid[0], outputPoints);
-			}
-		}
+	compute(outputPoints);
+    Viewer viewer;
+	viewer.setTriangles(&outputPoints[0], outputPoints.size() / 9);
+	//double lastTime = glfwGetTime();
+	while (viewer.loop()) {
+		/*if (glfwGetTime() - lastTime > 2.0) {
+			test += 200;
+			outputPoints.clear();
+			compute(outputPoints);
+			viewer.setTriangles(&outputPoints[0], outputPoints.size() / 9);
+			lastTime = glfwGetTime();
+		}*/
 	}
-	std::cout << outputPoints.size() << std::endl;
-	writeObj("c:\\temp\\plop.obj", &outputPoints[0], outputPoints.size());
-    //Viewer viewer;
-	//while (viewer.loop()) {}
 	return 1;
 }

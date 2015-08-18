@@ -5,7 +5,18 @@
 Viewer::Viewer()
 {
 	ok = init();
+	_trianglesNumber = 0;
 }
+
+void Viewer::setTriangles(float *triangles, int trianglesNumber)
+{
+	_trianglesNumber = trianglesNumber;
+	glGenBuffers(1, &vboID);
+	glBindBuffer(GL_ARRAY_BUFFER, vboID);
+	glBufferData(GL_ARRAY_BUFFER, trianglesNumber * 9 * sizeof(float), triangles, GL_STATIC_DRAW);
+
+}
+
 
 bool Viewer::init()
 {
@@ -43,21 +54,6 @@ bool Viewer::init()
 	glGenVertexArrays(1, &vaoID);
 	glBindVertexArray(vaoID);
 
-	// texture 
-	int picWidth = 256;
-	int picHeight = 256;
-
-	GLuint Texture = GG::loadBMP_custom("..\\OpenglViewer\\ressources\\textures\\uvtemplate.bmp");
-
-	//VBO
-	glGenBuffers(1, &vboID);
-	glBindBuffer(GL_ARRAY_BUFFER, vboID);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(g_vertex_buffer_data), g_vertex_buffer_data, GL_STATIC_DRAW);
-
-	glGenBuffers(1, &colorVboID);
-	glBindBuffer(GL_ARRAY_BUFFER, colorVboID);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(g_uv_buffer_data) * sizeof(GLfloat), g_uv_buffer_data, GL_STATIC_DRAW);
-
 	// shaders
 	programID = GG::LoadShaders("..\\OpenglViewer\\shaders\\SimpleVertexShader.vertexshader", "..\\OpenglViewer\\shaders\\SimpleFragmentShader.fragmentshader");
 
@@ -92,17 +88,13 @@ bool Viewer::loop()
 	glBindBuffer(GL_ARRAY_BUFFER, vboID);
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
 
-	glEnableVertexAttribArray(1);
-	glBindBuffer(GL_ARRAY_BUFFER, colorVboID);
-	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 0, (void*)0);
-
 	glUseProgram(programID);
 
 	glUniformMatrix4fv(matrixID, 1, GL_FALSE, &(MVP[0][0]));
 
-	glDrawArrays(GL_TRIANGLES, 0, 12 * 3);
+	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+	glDrawArrays(GL_TRIANGLES, 0, _trianglesNumber * 3);
 
-	glDisableVertexAttribArray(1);
 	glDisableVertexAttribArray(0);
 
 

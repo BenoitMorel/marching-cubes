@@ -24,17 +24,24 @@ public:
 	Viewer();
 	bool init();
 	bool loop();
+
+	/**
+	*	Set triangles in the VBO. (without normals or anything)
+	*/
+	void setTriangles(float *triangles, int trianglesNumber);
 	
 private:
 	bool ok;
 	GLFWwindow* window;
-	GLuint vboID;
 	GLuint vaoID;
-	GLuint colorVboID;
 	GLuint programID;
 	Camera camera;
 	GLuint matrixID;
 	double lastTime;
+
+private:
+	int _trianglesNumber;
+	GLuint vboID;
 };
 
 #endif

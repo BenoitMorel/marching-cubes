@@ -29,6 +29,24 @@ void writePGMToFileInt(std::string fileName, int width, int height, int *data) {
 	writePGMToFile(fileName, width, height, &newData[0]);
 }
 
+void writePGMToFileChar(std::string fileName, int width, int height, char *data) {
+	char min = 127;
+	char max = -127;
+	for (int i = 0; i < width * height; ++i) {
+		min = std::min(data[i], min);
+		max = std::max(data[i], max);
+	}
+	if (min == max) {
+		max = min + 1;
+	}
+	std::vector<int> newData(width * height);
+	for (int i = 0; i < width * height; ++i) {
+		int plop = (((data[i] - min) * 255) / (max - min));
+		newData[i] = plop;
+	}
+	writePGMToFile(fileName, width, height, &newData[0]);
+}
+
 void writePGMToFileFloat(std::string fileName, int width, int height, float *data) {
 	float min = FLT_MAX;
 	float max = FLT_MIN;

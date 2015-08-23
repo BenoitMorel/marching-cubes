@@ -44,11 +44,15 @@ Temporary Items
 *.suo
 *.opensdf
 OpenglViewer/OpenglViewer.sdf
+*\OpenglViewer.lib
+*70.dll
 *.sln
 *.exe
 *.pdb
 *.ilk
 *.vcxproj*
+*.cu.cache
+*.cu.deps
 OpenglViewer/OpenglViewer/Debug/*
 
 *.sdf
@@ -56,3 +60,5 @@ OpenglViewer/OpenglViewer/Debug/*
 *.tlog
 MarchingCubesCPU/Debug/vc140.idb
 *.log
+GloupsSolution/Debug/cudart32_70.dll
+*.idb

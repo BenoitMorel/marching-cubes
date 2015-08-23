@@ -37,7 +37,7 @@ __global__ void computeFonction(float *grid, int gridSize)
 /**
 *	look at the 8 corners of the voxel and deduce how many triangles are needed
 */
-__global__ void buildBasePyramid(const int *triTableSizes, const float *grid, int gridSize, char *oBasePyramid) {
+__global__ void buildBasePyramid(const int *triTableSizes, const float *grid, int gridSize, int *oBasePyramid) {
 	int index = threadIdx.x + blockIdx.x * blockDim.x;
 	int ix = index / (gridSize * gridSize);
 	int iy = (index / gridSize) % gridSize;
@@ -73,7 +73,7 @@ cudaError_t computeTrianglesAux1(std::vector<float> &triangles) {
 	cudaError_t cudaStatus;
 	float *functionValuesGPU = 0;
 	int *triTableSizesGPU = 0;
-	char *histoPyramidBaseGPU = 0;
+	int *histoPyramidBaseGPU = 0;
 	//int *histoPyramidNoBaseGPU = 0;
 	int blockSize = 512;
 	int nbBlocks = FCT_TOTAL_GRID_SIZE / blockSize;
@@ -85,8 +85,8 @@ cudaError_t computeTrianglesAux1(std::vector<float> &triangles) {
 	// allocations
 	CUDACHECKMSG("functionValuesGPU allocation failed", cudaMalloc((void**)&functionValuesGPU, FCT_TOTAL_GRID_SIZE * sizeof(float)));
 	CUDACHECKMSG("triTableSizesGPU allocation failed", cudaMalloc((void**)&triTableSizesGPU, 256 * sizeof(int)));
-	CUDACHECKMSG("histoPyramidBaseGPU allocation failed", cudaMalloc((void**)&histoPyramidBaseGPU, FCT_TOTAL_GRID_SIZE * sizeof(char)));
-	//CUDACHECKMSG("histoPyramidNoBaseGPU allocation failed", cudaMalloc((void**)&histoPyramidBaseGPU, FCT_TOTAL_GRID_SIZE * sizeof(int)));
+	CUDACHECKMSG("histoPyramidBaseGPU allocation failed", cudaMalloc((void**)&histoPyramidBaseGPU, FCT_TOTAL_GRID_SIZE * sizeof(int)));
+	CUDACHECKMSG("histoPyramidNoBaseGPU allocation failed", cudaMalloc((void**)&histoPyramidBaseGPU, FCT_TOTAL_GRID_SIZE * sizeof(int)));
 
 	// fill values grid
 	computeFonction <<<cudaGridSize, cudaBlockSize >>>(functionValuesGPU, FCT_GRID_SIZE);
@@ -102,7 +102,7 @@ cudaError_t computeTrianglesAux1(std::vector<float> &triangles) {
 	/*this is only for debug*/
 	{
 		float * functionValuesCPU = new float[FCT_TOTAL_GRID_SIZE];
-		char * histoPyramidBaseCPU = new char[FCT_TOTAL_GRID_SIZE];
+		int * histoPyramidBaseCPU = new int[FCT_TOTAL_GRID_SIZE];
 		if (!functionValuesCPU) {
 			std::cout << "Cannot allocate functionValuesCPU" << std::endl;
 		}
@@ -112,8 +112,8 @@ cudaError_t computeTrianglesAux1(std::vector<float> &triangles) {
 		CUDACHECKMSG("debug failed", cudaMemcpy(functionValuesCPU, functionValuesGPU, FCT_TOTAL_GRID_SIZE * sizeof(float), cudaMemcpyDeviceToHost));
 		writePGMToFileFloat("c:\\temp\\valuesGridMiddle.pgm", FCT_GRID_SIZE, FCT_GRID_SIZE, &functionValuesCPU[FCT_TOTAL_GRID_SIZE / 2]);
 		delete[] functionValuesCPU;
-		CUDACHECKMSG("debug failed", cudaMemcpy(histoPyramidBaseCPU, histoPyramidBaseGPU, FCT_TOTAL_GRID_SIZE * sizeof(char), cudaMemcpyDeviceToHost));
-		writePGMToFileChar("c:\\temp\\histoMiddle.pgm", FCT_GRID_SIZE, FCT_GRID_SIZE, &histoPyramidBaseCPU[FCT_TOTAL_GRID_SIZE / 2]);
+		CUDACHECKMSG("debug failed", cudaMemcpy(histoPyramidBaseCPU, histoPyramidBaseGPU, FCT_TOTAL_GRID_SIZE * sizeof(int), cudaMemcpyDeviceToHost));
+		writePGMToFileInt("c:\\temp\\histoMiddle.pgm", FCT_GRID_SIZE, FCT_GRID_SIZE, &histoPyramidBaseCPU[FCT_TOTAL_GRID_SIZE / 2]);
 		delete[] histoPyramidBaseCPU;
 	}
 

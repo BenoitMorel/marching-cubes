@@ -3,6 +3,7 @@
 #include <fstream>
 #include "../../OpenglViewer/src/Viewer.hpp"
 #include "marchingcubesconstants.hpp"
+#include "../../Utils/src/outputs.hpp"
 
 #define GETINDEX(macroi, macroj,macrok) (((macroi) * GRID_SIZE * GRID_SIZE) + ((macroj) * GRID_SIZE) + (macrok))
 #define GETK(macroindex) ((macroindex) % GRID_SIZE)
@@ -40,7 +41,7 @@ float myCrazyFunction(float x, float y, float z)
 	x -= 1;
 	y -= 1;
 	z -= 1;
-	return x * x * x + sqrt(fabs(y)) * x + z * z - 0.9f;
+	return x * x + y * y + z * z - 0.5f;
 }
 
 #define INTERPOL_VERTEX(EDGE_VALUE,	VERTEX, POSCELL, INDEX, P1, P2) \
@@ -126,8 +127,9 @@ void writeObj(char * fileName, float *data, int dataSize) {
 void compute(std::vector<float> &out) {
 	std::vector<float> grid(GRID_SIZE * GRID_SIZE * GRID_SIZE);
 	for (int i = 0; i < GRID_SIZE * GRID_SIZE * GRID_SIZE; ++i) {
-		grid[i] = ballons(float(GETI(i)) / float(GRID_SIZE), float(GETJ(i)) / float(GRID_SIZE), float(GETK(i) / float(GRID_SIZE)));
+		grid[i] = myCrazyFunction(float(GETI(i)) / float(GRID_SIZE), float(GETJ(i)) / float(GRID_SIZE), float(GETK(i) / float(GRID_SIZE)));
 	}
+
 	for (int i = 0; i < GRID_SIZE - 1; ++i) {
 		for (int j = 0; j < GRID_SIZE - 1; ++j) {
 			for (int k = 0; k < GRID_SIZE - 1; ++k) {
@@ -138,23 +140,48 @@ void compute(std::vector<float> &out) {
 	std::cout << out.size() << std::endl;
 }
 
-int main(void)
-{
-
-	
+int main1() {
 	std::vector<float> outputPoints;
 	compute(outputPoints);
-    Viewer viewer;
+	Viewer viewer;
 	viewer.setTriangles(&outputPoints[0], outputPoints.size() / 9);
 	//double lastTime = glfwGetTime();
 	while (viewer.loop()) {
 		/*if (glfwGetTime() - lastTime > 2.0) {
-			test += 200;
-			outputPoints.clear();
-			compute(outputPoints);
-			viewer.setTriangles(&outputPoints[0], outputPoints.size() / 9);
-			lastTime = glfwGetTime();
+		test += 200;
+		outputPoints.clear();
+		compute(outputPoints);
+		viewer.setTriangles(&outputPoints[0], outputPoints.size() / 9);
+		lastTime = glfwGetTime();
 		}*/
 	}
+	return 1;
+}
+
+int main2() {
+	Viewer viewer;
+	std::vector<float> points;
+	points.push_back(1.0);
+	points.push_back(2.0);
+	points.push_back(3.0);
+	points.push_back(1.0);
+	points.push_back(2.0);
+	points.push_back(0.0);
+	points.push_back(0.0);
+	points.push_back(2.0);
+	points.push_back(1.0);
+	viewer.setTriangles(&points[0], points.size() / 9);
+	while (viewer.loop()) {}
+	return 1;
+
+}
+int main(void)
+{
+	std::cout << "yo" << std::endl;
+	//main3();
+	main1();
+	//int plop;
+	//std::cin >> plop;
+	
 	return 1;
 }

@@ -26,7 +26,7 @@ bool Viewer::init()
 		fprintf(stderr, "Failed to initialize GLFW\n");
 		return false;
 	}
-
+	
 	glfwWindowHint(GLFW_SAMPLES, 4);
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
@@ -55,7 +55,7 @@ bool Viewer::init()
 	glBindVertexArray(vaoID);
 
 	// shaders
-	programID = GG::LoadShaders("..\\OpenglViewer\\shaders\\SimpleVertexShader.vertexshader", "..\\OpenglViewer\\shaders\\SimpleFragmentShader.fragmentshader");
+	programID = GG::LoadShaders("..\\..\\OpenglViewer\\shaders\\SimpleVertexShader.vertexshader", "..\\..\\OpenglViewer\\shaders\\SimpleFragmentShader.fragmentshader");
 
 	matrixID = glGetUniformLocation(programID, "MVP");
 	lastTime = glfwGetTime() - 1;

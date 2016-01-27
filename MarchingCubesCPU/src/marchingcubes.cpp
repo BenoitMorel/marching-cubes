@@ -32,7 +32,7 @@ float ballons(float x, float y, float z) {
 	return -(x*x + y*y + z*z) + cos(x * plop) * cos(plop * y) * cos(plop * z) + 0.215;
 }
 
-float myCrazyFunction(float x, float y, float z)
+float sphere(float x, float y, float z)
 {
 	// describes a sphere of radius 1
 	x *= 2.0;
@@ -42,6 +42,12 @@ float myCrazyFunction(float x, float y, float z)
 	y -= 1;
 	z -= 1;
 	return x * x + y * y + z * z - 0.5f;
+}
+
+float myCrazyFunction(float x, float y, float z)
+{
+	return ballons(x, y, z);
+
 }
 
 #define INTERPOL_VERTEX(EDGE_VALUE,	VERTEX, POSCELL, INDEX, P1, P2) \
@@ -178,7 +184,6 @@ int main2() {
 int main(void)
 {
 	std::cout << "yo" << std::endl;
-	//main3();
 	main1();
 	//int plop;
 	//std::cin >> plop;

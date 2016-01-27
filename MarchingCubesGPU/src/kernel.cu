@@ -42,8 +42,10 @@ __global__ void buildBasePyramid(const int *triTableSizes, const float *grid, in
 	int ix = index / (gridSize * gridSize);
 	int iy = (index / gridSize) % gridSize;
 	int iz = index % gridSize;
+	int indexBase = 0; // TODOOOOOOOOO
 	int indexVoxel = 0;
-	if (ix < gridSize - 1 && iy < gridSize - 1 && iz < gridSize - 1) {
+	int baseSize = gridSize - 1;
+	if (ix < baseSize && iy < baseSize && iz < baseSize) {
 		indexVoxel |= (grid[index] > 0) * 1;
 		indexVoxel |= (grid[index + gridSize * gridSize] > 0) * 2;
 		indexVoxel |= (grid[index + gridSize * gridSize + gridSize] > 0) * 4;
@@ -52,8 +54,34 @@ __global__ void buildBasePyramid(const int *triTableSizes, const float *grid, in
 		indexVoxel |= (grid[index + gridSize * gridSize + gridSize + 1] > 0) * 32;
 		indexVoxel |= (grid[index + gridSize * gridSize + 1] > 0) * 64;
 		indexVoxel |= (grid[index + 1] > 0) * 128;
-		oBasePyramid[index] = triTableSizes[indexVoxel];
+		oBasePyramid[ix * baseSize * baseSize + iy * baseSize + iz] = triTableSizes[indexVoxel];
 	}
+}
+
+
+__global__ void buildPyramidStep(int *oBasePyramid, int previousGridOffset, int currentGridOffset, int currentGridSize) {
+	int index = threadIdx.x + blockIdx.x * blockDim.x;
+	int ix = index / (currentGridSize * currentGridSize);
+	int iy = (index / currentGridSize) % currentGridSize;
+	int iz = index % currentGridSize;
+	if (ix < currentGridSize && iy < currentGridSize && iz < currentGridSize) {
+		int previousGridSize = currentGridSize * 2;
+		//int previousIndex = previousGridOffset + index;
+		int previousIndex = previousGridOffset + 2 * (ix * previousGridSize * previousGridSize + iy * previousGridSize + iz);
+		index += currentGridOffset;
+		oBasePyramid[index] = oBasePyramid[previousIndex];
+
+		oBasePyramid[index] += oBasePyramid[previousIndex + 1];
+		oBasePyramid[index] += oBasePyramid[previousIndex + previousGridSize];
+		oBasePyramid[index] += oBasePyramid[previousIndex + previousGridSize * previousGridSize];
+
+		oBasePyramid[index] += oBasePyramid[previousIndex + previousGridSize * previousGridSize + 1];
+		oBasePyramid[index] += oBasePyramid[previousIndex + previousGridSize * previousGridSize + previousGridSize];
+		oBasePyramid[index] += oBasePyramid[previousIndex + 1 + previousGridSize];
+
+		oBasePyramid[index] += oBasePyramid[previousIndex + previousGridSize * previousGridSize + previousGridSize + 1];
+	}
+
 }
 
 #define CUDACHECKMSG(message, command) \
@@ -63,6 +91,9 @@ __global__ void buildBasePyramid(const int *triTableSizes, const float *grid, in
 	CUDACHECKMSG("Cuda check failed", (command))
 
 
+void writeMiddle(const char *file, int *tab, int offset, int size) {
+	writePGMToFileInt(file, size, size, &tab[offset + size * size * (size / 2)]);
+}
 
 
 
@@ -74,7 +105,6 @@ cudaError_t computeTrianglesAux1(std::vector<float> &triangles) {
 	float *functionValuesGPU = 0;
 	int *triTableSizesGPU = 0;
 	int *histoPyramidBaseGPU = 0;
-	//int *histoPyramidNoBaseGPU = 0;
 	int blockSize = 512;
 	int nbBlocks = FCT_TOTAL_GRID_SIZE / blockSize;
 	std::cout << "block size : " << blockSize << std::endl;
@@ -85,8 +115,7 @@ cudaError_t computeTrianglesAux1(std::vector<float> &triangles) {
 	// allocations
 	CUDACHECKMSG("functionValuesGPU allocation failed", cudaMalloc((void**)&functionValuesGPU, FCT_TOTAL_GRID_SIZE * sizeof(float)));
 	CUDACHECKMSG("triTableSizesGPU allocation failed", cudaMalloc((void**)&triTableSizesGPU, 256 * sizeof(int)));
-	CUDACHECKMSG("histoPyramidBaseGPU allocation failed", cudaMalloc((void**)&histoPyramidBaseGPU, FCT_TOTAL_GRID_SIZE * sizeof(int)));
-	CUDACHECKMSG("histoPyramidNoBaseGPU allocation failed", cudaMalloc((void**)&histoPyramidBaseGPU, FCT_TOTAL_GRID_SIZE * sizeof(int)));
+	CUDACHECKMSG("histoPyramidBaseGPU allocation failed", cudaMalloc((void**)&histoPyramidBaseGPU, 2 * PYRAMID_TOTAL_GRID_SIZE * sizeof(int)));
 
 	// fill values grid
 	computeFonction <<<cudaGridSize, cudaBlockSize >>>(functionValuesGPU, FCT_GRID_SIZE);
@@ -99,21 +128,27 @@ cudaError_t computeTrianglesAux1(std::vector<float> &triangles) {
 	buildBasePyramid << <cudaGridSize, cudaBlockSize >> >(triTableSizesGPU, functionValuesGPU, FCT_GRID_SIZE, histoPyramidBaseGPU);
 	CUDACHECKMSG("buildBasePyramid failed", cudaGetLastError())
 
+
+	buildPyramidStep << <cudaGridSize, cudaBlockSize >> >(histoPyramidBaseGPU, 0, PYRAMID_TOTAL_GRID_SIZE, PYRAMID_GRID_SIZE / 2);
+	CUDACHECKMSG("buildBasePyramid failed", cudaGetLastError())
+	
+
 	/*this is only for debug*/
 	{
 		float * functionValuesCPU = new float[FCT_TOTAL_GRID_SIZE];
-		int * histoPyramidBaseCPU = new int[FCT_TOTAL_GRID_SIZE];
+		int * histoPyramidBaseCPU = new int[PYRAMID_TOTAL_GRID_SIZE * 2];
 		if (!functionValuesCPU) {
 			std::cout << "Cannot allocate functionValuesCPU" << std::endl;
 		}
 		if (!histoPyramidBaseCPU) {
 			std::cout << "Cannot allocate histoPyramidBaseGPU" << std::endl;
 		}
-		CUDACHECKMSG("debug failed", cudaMemcpy(functionValuesCPU, functionValuesGPU, FCT_TOTAL_GRID_SIZE * sizeof(float), cudaMemcpyDeviceToHost));
-		writePGMToFileFloat("c:\\temp\\valuesGridMiddle.pgm", FCT_GRID_SIZE, FCT_GRID_SIZE, &functionValuesCPU[FCT_TOTAL_GRID_SIZE / 2]);
-		delete[] functionValuesCPU;
-		CUDACHECKMSG("debug failed", cudaMemcpy(histoPyramidBaseCPU, histoPyramidBaseGPU, FCT_TOTAL_GRID_SIZE * sizeof(int), cudaMemcpyDeviceToHost));
-		writePGMToFileInt("c:\\temp\\histoMiddle.pgm", FCT_GRID_SIZE, FCT_GRID_SIZE, &histoPyramidBaseCPU[FCT_TOTAL_GRID_SIZE / 2]);
+		CUDACHECKMSG("debug 1  failed", cudaMemcpy(functionValuesCPU, functionValuesGPU, FCT_TOTAL_GRID_SIZE * sizeof(float), cudaMemcpyDeviceToHost));
+		writePGMToFileFloat("c:\\temp\\valuesGridMiddle.pgm", FCT_GRID_SIZE, FCT_GRID_SIZE, &functionValuesCPU[(FCT_GRID_SIZE * FCT_GRID_SIZE) * (FCT_GRID_SIZE / 2)]);
+		delete[] functionValuesCPU; 
+		CUDACHECKMSG("debug 2  failed", cudaMemcpy(histoPyramidBaseCPU, histoPyramidBaseGPU, 2 * PYRAMID_TOTAL_GRID_SIZE * sizeof(int), cudaMemcpyDeviceToHost));
+		writeMiddle("c:\\temp\\histoMiddle.pgm", histoPyramidBaseCPU, 0, PYRAMID_GRID_SIZE);
+		writeMiddle("c:\\temp\\histoMiddle1.pgm", histoPyramidBaseCPU, PYRAMID_TOTAL_GRID_SIZE, PYRAMID_GRID_SIZE / 2);
 		delete[] histoPyramidBaseCPU;
 	}
 

@@ -23,6 +23,7 @@ using namespace glm;
 class Viewer {
 public:
 	Viewer();
+	~Viewer();
 	bool init();
 	bool loop();
 
@@ -42,10 +43,13 @@ private:
 	GLuint matrixID;
 	double lastTime;
 
-private:
 	int _trianglesNumber;
 	GLuint vboID;
+	int vboIDSize;
 	std::vector<Updatable *> toUpdate;
+
+private:
+	void resize(int size);
 };
 
 #endif

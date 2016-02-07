@@ -6,7 +6,7 @@
 
 MCUpdatable::MCUpdatable(Viewer &viewer):
 _viewer(viewer),
-_marchingCubes(32),
+_marchingCubes(128),
 _currentValue(0.0),
 _fps()
 {

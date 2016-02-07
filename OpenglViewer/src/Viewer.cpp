@@ -7,26 +7,33 @@ Viewer::Viewer()
 	ok = init();
 	_trianglesNumber = 0;
 	glGenBuffers(1, &vboID);
+	
+	vboIDSize = 0;
+	resize(1024);
+	glBindBuffer(GL_ARRAY_BUFFER, vboID);
+}
+
+Viewer::~Viewer() {
+	glDeleteBuffers(1, &vboID);
+}
+
+void Viewer::resize(int size) {
+	vboIDSize = 1 << (int)ceil(log2((double)size));
+	glBindBuffer(GL_ARRAY_BUFFER, vboID);
+	glBufferData(GL_ARRAY_BUFFER, vboIDSize, 0, GL_DYNAMIC_DRAW);
 }
 
 void Viewer::setTriangles(float *triangles, int trianglesNumber)
 {
-	static int i = 0;
-	if (i == 0) {
-		_trianglesNumber = trianglesNumber;
-		glBindBuffer(GL_ARRAY_BUFFER, vboID);
-		glBufferData(GL_ARRAY_BUFFER, trianglesNumber * 9 * sizeof(float), triangles, GL_DYNAMIC_DRAW);
-		i++;
+	_trianglesNumber = trianglesNumber;
+	int size = trianglesNumber * 9 * sizeof(float);
+	if (size > vboIDSize) {
+		resize(size);
 	}
-	else {
-		_trianglesNumber = trianglesNumber;
+	if (trianglesNumber) {
 		glBindBuffer(GL_ARRAY_BUFFER, vboID);
-		if (trianglesNumber) {
-			glBufferSubData(GL_ARRAY_BUFFER, 0, trianglesNumber * 9 * sizeof(float), triangles);
-			std::cout << "update buffer " << trianglesNumber << std::endl;
-		}
+		glBufferSubData(GL_ARRAY_BUFFER, 0, size, triangles);
 	}
-
 
 }
 
@@ -68,7 +75,7 @@ bool Viewer::init()
 	glBindVertexArray(vaoID);
 
 	// shaders
-	programID = GG::LoadShaders("..\\..\\OpenglViewer\\shaders\\SimpleVertexShader.vertexshader", "..\\..\\OpenglViewer\\shaders\\SimpleFragmentShader.fragmentshader");
+	programID = GG::LoadShaders("..\\OpenglViewer\\shaders\\SimpleVertexShader.vertexshader", "..\\OpenglViewer\\shaders\\SimpleFragmentShader.fragmentshader");
 
 	matrixID = glGetUniformLocation(programID, "MVP");
 	lastTime = glfwGetTime() - 0.000000001;

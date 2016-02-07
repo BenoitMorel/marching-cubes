@@ -98,37 +98,15 @@ void getTrianglesFrom(int i, int j, int k, float *grid, std::vector<float> &outp
 	INTERPOL_VERTEX(edgeValue, vertices, posCell, 9, 1, 5);
 	INTERPOL_VERTEX(edgeValue, vertices, posCell, 10, 2, 6);
 	INTERPOL_VERTEX(edgeValue, vertices, posCell, 11, 3, 7);
-	for (int ii = 0; triTable[index][ ii] != -1; ii += 3) {
+	for (int ii = 0; triTable[index][ ii] != -1; ii += 1) {
 		output.push_back(vertices[    3 * triTable[index][ ii]]);
 		output.push_back(vertices[1 + 3 * triTable[index][ ii]]);
 		output.push_back(vertices[2 + 3 * triTable[index][ii]]);
 
-		output.push_back(vertices[    3 * triTable[index][ ii + 1]]);
-		output.push_back(vertices[1 + 3 * triTable[index][ii + 1]]);
-		output.push_back(vertices[2 + 3 * triTable[index][ii + 1]]);
-
-		output.push_back(vertices[    3 * triTable[index][ii + 2]]);
-		output.push_back(vertices[1 + 3 * triTable[index][ii + 2]]);
-		output.push_back(vertices[2 + 3 * triTable[index][ii + 2]]);
 		
 	}
 }
 
-void writeObj(char * fileName, float *data, int dataSize) {
-	std::ofstream os(fileName);
-	for (int i = 0; i < dataSize; i += 9) {
-		int off = i;
-		os << "v " << data[off] << " " << data[off + 1] << " " << data[off + 2] << std::endl;
-		off += 3;
-		os << "v " << data[off] << " " << data[off + 1] << " " << data[off + 2] << std::endl;
-		off += 3;
-		os << "v " << data[off] << " " << data[off + 1] << " " << data[off + 2] << std::endl;
-	}
-	for (int i = 0; i < dataSize; i += 9) {
-		os << "f " << i / 3 + 1 << " " << i / 3 + 2 << " " << i / 3 + 3 << std::endl;
-	}
-
-}
 
 void compute(std::vector<float> &out) {
 	std::vector<float> grid(GRID_SIZE * GRID_SIZE * GRID_SIZE);
@@ -150,6 +128,8 @@ int main1() {
 	std::vector<float> outputPoints;
 	compute(outputPoints);
 	Viewer viewer;
+	std::cout << outputPoints.size() << " " << outputPoints.size() * 3 << " " << outputPoints.size() / 3 << std::endl;
+
 	viewer.setTriangles(&outputPoints[0], outputPoints.size() / 9);
 	//double lastTime = glfwGetTime();
 	while (viewer.loop()) {

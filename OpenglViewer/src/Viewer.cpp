@@ -6,14 +6,27 @@ Viewer::Viewer()
 {
 	ok = init();
 	_trianglesNumber = 0;
+	glGenBuffers(1, &vboID);
 }
 
 void Viewer::setTriangles(float *triangles, int trianglesNumber)
 {
-	_trianglesNumber = trianglesNumber;
-	glGenBuffers(1, &vboID);
-	glBindBuffer(GL_ARRAY_BUFFER, vboID);
-	glBufferData(GL_ARRAY_BUFFER, trianglesNumber * 9 * sizeof(float), triangles, GL_STATIC_DRAW);
+	static int i = 0;
+	if (i == 0) {
+		_trianglesNumber = trianglesNumber;
+		glBindBuffer(GL_ARRAY_BUFFER, vboID);
+		glBufferData(GL_ARRAY_BUFFER, trianglesNumber * 9 * sizeof(float), triangles, GL_DYNAMIC_DRAW);
+		i++;
+	}
+	else {
+		_trianglesNumber = trianglesNumber;
+		glBindBuffer(GL_ARRAY_BUFFER, vboID);
+		if (trianglesNumber) {
+			glBufferSubData(GL_ARRAY_BUFFER, 0, trianglesNumber * 9 * sizeof(float), triangles);
+			std::cout << "update buffer " << trianglesNumber << std::endl;
+		}
+	}
+
 
 }
 
@@ -58,7 +71,7 @@ bool Viewer::init()
 	programID = GG::LoadShaders("..\\..\\OpenglViewer\\shaders\\SimpleVertexShader.vertexshader", "..\\..\\OpenglViewer\\shaders\\SimpleFragmentShader.fragmentshader");
 
 	matrixID = glGetUniformLocation(programID, "MVP");
-	lastTime = glfwGetTime() - 1;
+	lastTime = glfwGetTime() - 0.000000001;
 
 	return true;
 }
@@ -72,7 +85,12 @@ bool Viewer::loop()
 	int width, height;
 	float deltaTime;
 	double currentTime = glfwGetTime();
-	deltaTime = lastTime - currentTime;
+	deltaTime = currentTime - lastTime;
+
+	for (int i = 0; i < toUpdate.size(); ++i) {
+		toUpdate[i]->update(deltaTime);
+	}
+
 	lastTime = currentTime;
 	camera.update(window, deltaTime);
 	glm::mat4 MVP = camera.getProjection() * camera.getView();
@@ -92,8 +110,11 @@ bool Viewer::loop()
 
 	glUniformMatrix4fv(matrixID, 1, GL_FALSE, &(MVP[0][0]));
 
-	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-	glDrawArrays(GL_TRIANGLES, 0, _trianglesNumber * 3);
+	glPolygonMode(GL_FRONT_AND_BACK, GL_POINT);
+	if (_trianglesNumber) {
+		glDrawArrays(GL_TRIANGLES, 0, _trianglesNumber * 3);
+		std::cout << "draw " << _trianglesNumber << std::endl;
+	}
 
 	glDisableVertexAttribArray(0);
 
@@ -103,4 +124,8 @@ bool Viewer::loop()
 
 	return glfwGetKey(window, GLFW_KEY_ESCAPE) != GLFW_PRESS &&
 		glfwWindowShouldClose(window) == 0;
+}
+
+void Viewer::addUpdatable(Updatable *updatable) {
+	toUpdate.push_back(updatable);
 }

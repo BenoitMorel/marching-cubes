@@ -14,6 +14,7 @@ using namespace glm;
 #include "texture.hpp"
 #include "Constants.hpp"
 #include "Camera.hpp"
+#include "Updatable.hpp"
 #include <vector>
 #include <time.h>
 #include <iostream>
@@ -29,6 +30,8 @@ public:
 	*	Set triangles in the VBO. (without normals or anything)
 	*/
 	void setTriangles(float *triangles, int trianglesNumber);
+
+	void addUpdatable(Updatable *updatable);
 	
 private:
 	bool ok;
@@ -42,6 +45,7 @@ private:
 private:
 	int _trianglesNumber;
 	GLuint vboID;
+	std::vector<Updatable *> toUpdate;
 };
 
 #endif

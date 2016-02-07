@@ -6,7 +6,7 @@
 */
 
 
-const int GRID_SIZE = 64;
+const int GRID_SIZE = 32;
 
 const float UNITOFFSET = 1.0 / float(GRID_SIZE);
 float pointOffset[24] = { 0.0, 0.0, 0.0,

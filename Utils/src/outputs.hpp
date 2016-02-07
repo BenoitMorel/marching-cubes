@@ -74,5 +74,16 @@ void writePGMToFile(std::string fileName, int width, int height, int *data)
 		os << (int)data[i] << " ";
 	}
 }
+/*
+writePyramid(std::string fileName, int size, int *pyramid) {
+	int 
+}
+*/
+void writeData(std::string fileName, int* values, int size) {
+	std::ofstream os(fileName);
+	for (int i = 0; i < size; ++i) {
+		os << values[i] << " ";
+	}
+}
 
 #endif

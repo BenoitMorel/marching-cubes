@@ -19,15 +19,7 @@ int triTableSizes[256] = { 0, 3, 3, 6, 3, 6, 6, 9, 3, 6, 6, 9, 6, 9, 9, 6, 3, 6,
 12, 6, 3, 6, 9, 9, 6, 9, 12, 6, 3, 9, 6, 12, 3, 6, 3, 3, 0 };
 
 
-const float UNITOFFSET = 1.0 / float(FCT_GRID_SIZE);
-float pointOffset[24] = { 0.0, 0.0, 0.0,
-UNITOFFSET, 0.0, 0.0,
-UNITOFFSET, UNITOFFSET, 0.0,
-0.0, UNITOFFSET, 0.0,
-0.0, 0.0, UNITOFFSET,
-UNITOFFSET, 0.0, UNITOFFSET,
-UNITOFFSET, UNITOFFSET, UNITOFFSET,
-0.0, UNITOFFSET, UNITOFFSET };
+
 
 int edgeTable[256] = {
 	0x0, 0x109, 0x203, 0x30a, 0x406, 0x50f, 0x605, 0x70c,

@@ -1,14 +1,7 @@
-includes :
-$(SolutionDir)\..\ThirdParty\glew\include;$(SolutionDir)\..\ThirdParty\glm;$(SolutionDir)\..\ThirdParty\glfw\include\GLFW;$(VC_IncludePath);
+Both CPU and GPU (with CUDA) implementations of the marching cube algorithm, along with an OpenGL viewer to display real time upates of the resulting mesh.
 
-libs:
-$(SolutionDir)\..\ThirdParty\glew\lib;$(SolutionDir)\..\ThirdParty\glfw\lib;
-opengl32.lib;glfw3.lib;glew32.lib;kernel32.lib
-Ajouter les deps entre projets a
+Marching cube core implementation: https://github.com/BenoitMorel/marching-cubes/blob/master/MarchingCubesGPU/src/kernel.cu
+Interactive 3D viewer: https://github.com/BenoitMorel/marching-cubes/tree/master/OpenglViewer
 
-dyn libs:
-PATH=%PATH%;$(SolutionDir)\..\ThirdParty\glew\bin
+Todo: recompile it to take a few screenshots!
 
-Supplémentaires :
-$(SolutionDir)\..\GloupsSolution\Debug
-OpenglViewer.lib
